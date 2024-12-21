@@ -1,0 +1,32 @@
+.banner-container {
+    background-color: black;
+    color: white;
+    font-size: 12px;
+    padding: 2px 0;
+    overflow: hidden;
+    position: relative;
+    white-space: nowrap; /* Esto asegura que el texto no se divida en líneas */
+    width: 100%; /* Para asegurar que ocupe todo el ancho disponible */
+  }
+  
+  .marquee {
+    display: flex;
+    flex-wrap: nowrap;
+    animation: slide-left 25s linear infinite;
+    width: max-content; /* Asegura que el contenedor se ajuste al contenido */
+  }
+  
+  .marquee span {
+    margin-right: 30px; /* Espaciado entre los mensajes */
+  }
+  
+  @keyframes slide-left {
+    0% {
+      transform: translateX(100%);
+    }
+    100% {
+      transform: translateX(-100%);
+    }
+  }
+  
+  

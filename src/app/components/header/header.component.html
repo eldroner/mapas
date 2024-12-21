@@ -1,14 +1,21 @@
-<header>
-    <div class="logo">
-      <h1>Mapas Educativos</h1>
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">Mapas interesantes e interactivos</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+
+          <li><a class="text-dark" [routerLink]="'/'">Home</a></li>
+          <li><a class="text-dark" [routerLink]="'/antipodas'">Mapa Antípodas</a></li>
+          <li><a class="text-dark" [routerLink]="'/meridiano'">Meridiano Móvil</a></li>
+          
+        </ul>
+        <form class="d-flex">
+          <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+          <button class="btn btn-outline-success" type="submit">Search</button>
+        </form>
+      </div>
     </div>
-    <nav>
-      <ul>
-        <li><a routerLink="/mapa-mundi">Mapa Mundo</a></li>
-        <li><a routerLink="/mapa-espana">Mapa España</a></li>
-        <li><a routerLink="/meridiano-movil">Meridiano Móvil</a></li>
-        <!-- Agregar más enlaces según los mapas que tengas -->
-      </ul>
-    </nav>
-  </header>
-  
+  </nav>

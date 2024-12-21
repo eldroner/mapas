@@ -1,0 +1,57 @@
+/* Contenedor de las cards */
+.cards-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    padding: 20px;
+  }
+  
+  /* Estilo general de cada card */
+  .card {
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+  }
+  
+  /* Estilo para la cabecera de cada card */
+  .card-header {
+    background-color: #333;
+    color: #fff;
+    padding: 15px;
+    text-align: center;
+  }
+  
+  /* Estilo para el cuerpo de la card */
+  .card-body {
+    padding: 15px;
+    text-align: center;
+  }
+  
+  /* Estilo para el pie de la card */
+  .card-footer {
+    padding: 15px;
+    text-align: center;
+    background-color: #f4f4f4;
+  }
+  
+  .card-footer .btn {
+    background-color: #333;
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 5px;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+  }
+  
+  .card-footer .btn:hover {
+    background-color: #555;
+  }
+  
+  /* Efecto de hover en las cards */
+  .card:hover {
+    transform: translateY(-10px);
+  }
+  
