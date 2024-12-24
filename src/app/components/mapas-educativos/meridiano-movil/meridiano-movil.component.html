@@ -1,3 +1,4 @@
-<div class="map-container">
-    <div #map style="height: 750px;  width:1024px; margin:auto; margin-top:50px;"></div>  <!-- Aquí se muestra el mapa -->
-  </div>
+<div style="height: 750px;  width:1024px; margin:auto; margin-top:50px;">
+  <app-mapa-mundo [center]="[0, 0]" [zoom]="2" [draggable]="true"></app-mapa-mundo>
+  <div class="central-line"></div>
+</div>
