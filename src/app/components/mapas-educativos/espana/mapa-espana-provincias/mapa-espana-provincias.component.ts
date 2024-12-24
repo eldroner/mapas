@@ -15,7 +15,7 @@ export class MapaEspanaProvinciasComponent implements AfterViewInit {
 
   ngAfterViewInit(): void {
     const map = this.mapaBase.map;
-  
+
     // Establecer los límites del mapa para que incluya toda España (península y las islas)
     const bounds = L.latLngBounds(
       L.latLng(27.251278, -18.893679),  // Coordenadas suroeste de las Islas Canarias
@@ -38,15 +38,16 @@ export class MapaEspanaProvinciasComponent implements AfterViewInit {
       })
       .then((geojson) => {
         console.log("GeoJSON cargado:", geojson);
-  
+
         this.geoJsonLayer = L.geoJSON(geojson, {
-          style: this.styleProvinces.bind(this)
+          style: this.styleProvinces.bind(this),
+          onEachFeature: this.onEachFeature.bind(this) // Agregar eventos de interacción
         });
-  
+
         if (this.geoJsonLayer) {
           this.geoJsonLayer.addTo(map);
           console.log('Capa GeoJSON agregada al mapa');
-          
+
           // Verificar si la capa está correctamente añadida
           if (map.hasLayer(this.geoJsonLayer)) {
             console.log('La capa GeoJSON está añadida al mapa');
@@ -58,12 +59,53 @@ export class MapaEspanaProvinciasComponent implements AfterViewInit {
       .catch((error) => console.error('Error cargando el archivo GeoJSON:', error));
   }
 
-  // Estilo para dibujar solo las líneas de las provincias
+  // Estilo para colorear las provincias
   private styleProvinces(feature: any): L.PathOptions {
     return {
-      color: '#FF0000', // Color del borde (rojo para mejor visibilidad)
-      weight: 2, // Grosor del borde
-      fillOpacity: 0, // Sin relleno para las provincias
+      color: '#D4DADC', // Color del borde (negro)
+      weight: 0.1, // Grosor del borde
+      fillColor: this.getRandomColor(), // Color de relleno aleatorio
+      fillOpacity: 0.7, // Relleno con opacidad del 70%
     };
+  }
+
+  // Método para generar un color aleatorio
+  private getRandomColor(): string {
+    const letters = '0123456789ABCDEF';
+    let color = '#';
+    for (let i = 0; i < 6; i++) {
+      color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+  }
+
+  // Añadir interactividad a cada provincia
+  private onEachFeature(feature: any, layer: L.Layer): void {
+    layer.on({
+      mouseover: (e: L.LeafletMouseEvent) => this.highlightFeature(e),
+      mouseout: (e: L.LeafletMouseEvent) => this.resetHighlight(e),
+    });
+  }
+
+  // Resaltar la provincia al pasar el mouse
+  private highlightFeature(e: L.LeafletMouseEvent): void {
+    const layer = e.target;
+
+    // Cambiar temporalmente el estilo
+    layer.setStyle({
+      fillOpacity: 1, // Opacidad más fuerte
+      fillColor: '#FFD700', // Color dorado para destacar
+    });
+
+    // Asegurarse de que el cambio visual se aplique correctamente
+    layer.bringToFront();
+  }
+
+  // Restaurar el estilo original al quitar el mouse
+  private resetHighlight(e: L.LeafletMouseEvent): void {
+    const layer = e.target;
+
+    // Restaurar el estilo original (vuelve al estilo de las provincias)
+    this.geoJsonLayer.resetStyle(layer);
   }
 }
