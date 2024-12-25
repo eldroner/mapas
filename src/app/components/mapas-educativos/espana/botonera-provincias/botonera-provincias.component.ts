@@ -33,6 +33,10 @@ export class BotoneraProvinciasComponent {
 
   botonesDeshabilitados: Set<string> = new Set<string>();
 
+  reiniciarBotones(): void {
+    this.botonesDeshabilitados.clear();
+  }
+
   seleccionarProvincia(provincia: string): void {
     if (!this.botonesDeshabilitados.has(provincia)) {
       this.respuestaSeleccionada.emit(provincia);
@@ -40,6 +44,7 @@ export class BotoneraProvinciasComponent {
   }
 
   marcarComoCorrecta(provincia: string): void {
-    this.botonesDeshabilitados.add(provincia);
+    this.botonesDeshabilitados.add(provincia); // Marcar el botón como deshabilitado
   }
+  
 }

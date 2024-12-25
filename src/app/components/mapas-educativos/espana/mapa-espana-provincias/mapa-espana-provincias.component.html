@@ -1,13 +1,29 @@
-<div class="contenedor-mapa-botonera">
-  <!-- Contenedor del mapa -->
-  <div class="mapa col-6" style="height: 520px; width: 614px; margin:auto; margin-top:50px;">
-    <app-mapa-espana></app-mapa-espana>
+<div class="contenedor-principal">
+  <!-- Botonera izquierda -->
+  <div class="botonera-izquierda">
+    <app-botonera-provincias
+      #botoneraIzquierda
+      [provincias]="provinciasIzquierda"
+      [provinciaActiva]="provinciaActiva"
+      (respuestaSeleccionada)="manejarRespuesta($event)">
+    </app-botonera-provincias>
   </div>
 
-  <!-- Contenedor de la botonera -->
-  <div class="botonera">
+  <!-- Contenedor del mapa -->
+  <div class="mapa col-6" style="height: 520px; width: 614px; margin:auto; margin-top:50px;">
+    <app-mapa-espana
+      [center]="[35.41, -6.61]"
+      [zoom]="5"
+      [draggable]="false"
+      [disableZoom]="true">
+    </app-mapa-espana>
+  </div>
+
+  <!-- Botonera derecha -->
+  <div class="botonera-derecha">
     <app-botonera-provincias
-      [provincias]="provincias"
+      #botoneraDerecha
+      [provincias]="provinciasDerecha"
       [provinciaActiva]="provinciaActiva"
       (respuestaSeleccionada)="manejarRespuesta($event)">
     </app-botonera-provincias>

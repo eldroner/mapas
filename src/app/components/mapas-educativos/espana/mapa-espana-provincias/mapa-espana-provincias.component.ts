@@ -3,6 +3,10 @@ import { MapaEspanaComponent } from '../../../mapas-base/mapa-espana/mapa-espana
 import { BotoneraProvinciasComponent } from '../botonera-provincias/botonera-provincias.component';
 import * as L from 'leaflet';
 
+interface PathWithFeature extends L.Path {
+  feature?: GeoJSON.Feature & { properties: { [key: string]: any } };
+}
+
 @Component({
   selector: 'app-mapa-espana-provincias',
   templateUrl: './mapa-espana-provincias.component.html',
@@ -12,21 +16,19 @@ import * as L from 'leaflet';
 })
 export class MapaEspanaProvinciasComponent implements AfterViewInit {
   @ViewChild(MapaEspanaComponent, { static: false }) mapaBase!: MapaEspanaComponent;
-  @ViewChild(BotoneraProvinciasComponent, { static: false }) botonera!: BotoneraProvinciasComponent;
+  @ViewChild('botoneraIzquierda', { static: false }) botoneraIzquierda!: BotoneraProvinciasComponent;
+  @ViewChild('botoneraDerecha', { static: false }) botoneraDerecha!: BotoneraProvinciasComponent;
 
-  provincias: string[] = [
-    "Álava", "Albacete", "Alicante", "Almería", "Asturias", "Ávila",
-    "Badajoz", "Barcelona", "Burgos", "Cáceres", "Cádiz", "Cantabria",
-    "Castellón", "Ciudad Real", "Córdoba", "Cuenca", "Girona", "Granada",
-    "Guadalajara", "Guipúzcoa", "Huelva", "Huesca", "Illes Balears", "Jaén",
-    "La Coruña", "La Rioja", "Las Palmas", "León", "Lérida", "Lugo",
-    "Madrid", "Málaga", "Murcia", "Navarra", "Ourense", "Palencia",
-    "Pontevedra", "Salamanca", "Santa Cruz de Tenerife", "Segovia",
-    "Sevilla", "Soria", "Tarragona", "Teruel", "Toledo", "Valencia",
-    "Valladolid", "Vizcaya", "Zamora", "Zaragoza"
-  ];
-
+  provincias: string[] = []; // Extraídas dinámicamente desde el GeoJSON
+  provinciasIzquierda: string[] = [];
+  provinciasDerecha: string[] = [];
+  provinciasUsadas: Set<string> = new Set(); // Provincias ya seleccionadas
   provinciaActiva: string | null = null;
+  private geoJsonLayer!: L.GeoJSON;
+  private capaProvinciaActiva: PathWithFeature | null = null;
+  private parpadeoInterval: any = null;
+  private marcadorProvinciaPequena: L.CircleMarker | null = null; // Para Ceuta y Melilla
+
 
   constructor(private cdr: ChangeDetectorRef) {}
 
@@ -41,56 +43,207 @@ export class MapaEspanaProvinciasComponent implements AfterViewInit {
     map.setMaxBounds(bounds);
     map.fitBounds(bounds);
 
-    this.loadProvincesGeoJSON(map);
-    this.provinciaActiva = this.seleccionarProvinciaAleatoria();
-    this.cdr.detectChanges(); // Aseguramos que Angular detecte los cambios
+    this.loadProvincesGeoJSON(map).then(() => {
+      this.dividirProvincias(); // Dividir provincias en dos listas
+      this.provinciaActiva = this.seleccionarProvinciaAleatoria(); // Iniciar con una provincia activa
+      this.cdr.detectChanges(); // Aseguramos que Angular detecte los cambios
+    });
   }
 
   manejarRespuesta(provincia: string): void {
     if (provincia === this.provinciaActiva) {
       alert(`¡Correcto! Has seleccionado ${provincia}`);
-      this.botonera.marcarComoCorrecta(provincia); // Deshabilitar el botón correcto
+      this.detenerIluminacionProvincia(); // Detener el parpadeo de la provincia actual
+  
+      // Notificar a ambas botoneras
+      this.botoneraIzquierda.marcarComoCorrecta(provincia); // Botonera izquierda
+      this.botoneraDerecha.marcarComoCorrecta(provincia); // Botonera derecha
+  
+      // Añadir la provincia a las usadas
+      this.provinciasUsadas.add(provincia);
+  
+      // Seleccionar una nueva provincia activa
       this.provinciaActiva = this.seleccionarProvinciaAleatoria();
     } else {
       alert(`Incorrecto. La provincia activa era ${this.provinciaActiva}`);
     }
   }
 
-  private seleccionarProvinciaAleatoria(): string {
-    const randomIndex = Math.floor(Math.random() * this.provincias.length);
-    return this.provincias[randomIndex];
+  private dividirProvincias(): void {
+    const mitad = Math.ceil(this.provincias.length / 2);
+    this.provinciasIzquierda = this.provincias.slice(0, mitad);
+    this.provinciasDerecha = this.provincias.slice(mitad);
   }
 
-  private loadProvincesGeoJSON(map: L.Map): void {
-    fetch('assets/spain-provinces.geojson')
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error('Error al cargar el archivo GeoJSON');
-        }
-        return response.json();
-      })
-      .then((geojson) => {
-        console.log("GeoJSON cargado:", geojson);
+  private seleccionarProvinciaAleatoria(): string | null {
+    const provinciasRestantes = this.provincias.filter(p => !this.provinciasUsadas.has(p));
 
-        L.geoJSON(geojson, {
-          style: this.styleProvinces.bind(this),
-          onEachFeature: this.onEachFeature.bind(this)
-        }).addTo(map);
-      })
-      .catch((error) => console.error('Error cargando el archivo GeoJSON:', error));
+    if (provinciasRestantes.length === 0) {
+      this.mostrarDialogoFinJuego(); // Mostrar ventana emergente
+      return null;
+    }
+
+    const randomIndex = Math.floor(Math.random() * provinciasRestantes.length);
+    const nuevaProvincia = provinciasRestantes[randomIndex];
+
+    // Activar visualmente la provincia
+    this.activarProvinciaEnMapa(nuevaProvincia);
+
+    return nuevaProvincia;
+  }
+
+  private async loadProvincesGeoJSON(map: L.Map): Promise<void> {
+    const response = await fetch('assets/spain-provinces.geojson');
+    if (!response.ok) {
+      throw new Error('Error al cargar el archivo GeoJSON');
+    }
+    const geojson = await response.json();
+
+    // Extraer los nombres de las provincias directamente del GeoJSON
+    this.provincias = geojson.features.map((feature: any) => feature.properties.name);
+
+    this.geoJsonLayer = L.geoJSON(geojson, {
+      style: this.styleProvinces.bind(this),
+      onEachFeature: this.onEachFeature.bind(this)
+    }).addTo(map);
   }
 
   private styleProvinces(feature: any): L.PathOptions {
-    // Generar un color aleatorio para cada provincia
     const color = this.getRandomColor();
-    feature.properties.originalColor = color;
+    feature.properties['originalColor'] = color;
 
     return {
-      color: '#000', // Sin borde
-      weight: 0, // Grosor del borde
-      fillColor: color, // Color único
+      color: '#000', // Borde negro
+      weight: 0,
+      fillColor: color,
       fillOpacity: 0.7,
     };
+  }
+
+  private activarProvinciaEnMapa(nombreProvincia: string): void {
+    if (this.geoJsonLayer) {
+      this.geoJsonLayer.eachLayer((layer: L.Layer) => {
+        const pathLayer = layer as PathWithFeature;
+        if (pathLayer.feature?.properties?.['name'] === nombreProvincia) {
+          this.capaProvinciaActiva = pathLayer;
+  
+          // Inicia el parpadeo para provincias normales
+          if (nombreProvincia !== 'Ceuta' && nombreProvincia !== 'Melilla') {
+            this.iniciarParpadeoProvincia(pathLayer);
+          } else {
+            this.iniciarParpadeoProvinciaPequena(nombreProvincia);
+          }
+        }
+      });
+    }
+  }
+
+  private iniciarParpadeoProvinciaPequena(nombreProvincia: string): void {
+    const coordenadas: { [key: string]: [number, number] } = {
+      'Ceuta': [35.889387, -5.321345],
+      'Melilla': [35.292277, -2.938097]
+    };
+  
+    const posicion = coordenadas[nombreProvincia];
+    if (!posicion) return;
+  
+    // Elimina cualquier marcador existente
+    if (this.marcadorProvinciaPequena) {
+      this.mapaBase.map.removeLayer(this.marcadorProvinciaPequena);
+    }
+  
+    // Crea un nuevo marcador circular
+    this.marcadorProvinciaPequena = L.circleMarker(posicion, {
+      radius: 10, // Tamaño del marcador
+      color: '#FFD700', // Borde dorado
+      fillColor: '#FFD700', // Relleno dorado
+      fillOpacity: 1
+    }).addTo(this.mapaBase.map);
+  
+    // Parpadeo
+    let visible = true;
+    this.parpadeoInterval = setInterval(() => {
+      if (this.marcadorProvinciaPequena) {
+        this.marcadorProvinciaPequena.setStyle({
+          fillOpacity: visible ? 1 : 0.3,
+          radius: visible ? 15 : 10, // Alterna entre dos tamaños
+        });
+        visible = !visible;
+      }
+    }, 500);
+  }
+  
+  
+
+  private detenerIluminacionProvincia(): void {
+    if (this.capaProvinciaActiva) {
+      clearInterval(this.parpadeoInterval); // Detener el parpadeo
+      const originalColor = this.capaProvinciaActiva.feature?.properties?.['originalColor'] || '#CCCCCC';
+      this.capaProvinciaActiva.setStyle({
+        fillColor: originalColor,
+        fillOpacity: 0.7
+      });
+      this.capaProvinciaActiva = null;
+    }
+  
+    // Eliminar marcador de provincia pequeña
+    if (this.marcadorProvinciaPequena) {
+      this.mapaBase.map.removeLayer(this.marcadorProvinciaPequena);
+      this.marcadorProvinciaPequena = null;
+    }
+  }
+  
+
+  private iniciarParpadeoProvincia(layer: PathWithFeature): void {
+    let visible = true; // Control de visibilidad
+    const originalColor = layer.feature?.properties?.['originalColor'] || '#000';
+
+    this.parpadeoInterval = setInterval(() => {
+      layer.setStyle({
+        fillColor: visible ? '#FFD700' : originalColor,
+        fillOpacity: visible ? 1 : 0.7,
+      });
+      visible = !visible; // Cambiar el estado
+    }, 500); // Cambia cada 500ms
+  }
+
+  private mostrarDialogoFinJuego(): void {
+    const resultado = confirm('¡Has ganado! El juego se reiniciará. ¿Estás listo?');
+    if (resultado) {
+      setTimeout(() => {
+        window.location.reload(); // Recargar la página después de un breve delay
+      }, 1000); // Esperar 1 segundo
+    }
+  }
+  
+
+  private onEachFeature(feature: any, layer: L.Layer): void {
+    const pathLayer = layer as PathWithFeature;
+    pathLayer.on({
+      mouseover: (e: L.LeafletMouseEvent) => this.highlightFeature(e),
+      mouseout: (e: L.LeafletMouseEvent) => this.resetHighlight(e),
+    });
+  }
+
+  private highlightFeature(e: L.LeafletMouseEvent): void {
+    const layer = e.target as PathWithFeature;
+
+    layer.setStyle({
+      fillOpacity: 1,
+      fillColor: '#FFD700',
+    });
+
+    layer.bringToFront();
+  }
+
+  private resetHighlight(e: L.LeafletMouseEvent): void {
+    const layer = e.target as PathWithFeature;
+
+    const originalColor = layer.feature?.properties?.['originalColor'] || '#CCCCCC';
+    layer.setStyle({
+      fillOpacity: 0.7,
+      fillColor: originalColor,
+    });
   }
 
   private getRandomColor(): string {
@@ -100,33 +253,5 @@ export class MapaEspanaProvinciasComponent implements AfterViewInit {
       color += letters[Math.floor(Math.random() * 16)];
     }
     return color;
-  }
-
-  private onEachFeature(feature: any, layer: L.Layer): void {
-    layer.on({
-      mouseover: (e: L.LeafletMouseEvent) => this.highlightFeature(e),
-      mouseout: (e: L.LeafletMouseEvent) => this.resetHighlight(e),
-    });
-  }
-
-  private highlightFeature(e: L.LeafletMouseEvent): void {
-    const layer = e.target;
-
-    layer.setStyle({
-      fillOpacity: 1,
-      fillColor: '#FFD700', // Color resaltado
-    });
-
-    layer.bringToFront();
-  }
-
-  private resetHighlight(e: L.LeafletMouseEvent): void {
-    const layer = e.target;
-    const originalColor = layer.feature?.properties?.originalColor || '#CCCCCC';
-
-    layer.setStyle({
-      fillOpacity: 0.7,
-      fillColor: originalColor, // Restaurar color original
-    });
   }
 }

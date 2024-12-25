@@ -1,1 +1,10 @@
-<p>botonera-provincias works!</p>
+<div class="botonera">
+    <app-boton
+      *ngFor="let provincia of provincias"
+      [texto]="provincia"
+      [isActive]="provincia === provinciaActiva"
+      [isDisabled]="botonesDeshabilitados.has(provincia)"
+      (onClick)="seleccionarProvincia(provincia)">
+    </app-boton>
+  </div>
+  

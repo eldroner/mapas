@@ -1,21 +1,16 @@
-.contenedor-mapa-botonera {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 20px;
-  }
-  
-  .mapa {
-    width: 614px;
-    height: 520px;
-    border: 1px solid #ddd;
-  }
-  
-  .botonera {
-    width: 100%;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 10px;
-  }
-  
+.contenedor-principal {
+  display: flex;
+  align-items: stretch; /* Asegura que todos los elementos tengan la misma altura */
+  height: 100vh; /* Altura completa del viewport */
+}
+
+.botonera-izquierda,
+.botonera-derecha {
+  flex: 0 0 27%; /* Ocupan un 20% del ancho total */
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start; /* Alinea botones al inicio */
+  gap: 5px;
+  overflow-y: auto; /* Habilita scroll si el contenido desborda */
+  padding: 5px; /* Añade algo de espacio interno */
+}

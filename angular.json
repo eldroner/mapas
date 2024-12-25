@@ -66,17 +66,17 @@
           "defaultConfiguration": "production"
         },
         "serve": {
-          "builder": "@angular-devkit/build-angular:dev-server",
-          "configurations": {
-            "production": {
-              "buildTarget": "mapas-educativos:build:production"
-            },
-            "development": {
-              "buildTarget": "mapas-educativos:build:development"
-            }
-          },
-          "defaultConfiguration": "development"
-        },
+  "builder": "@angular-devkit/build-angular:dev-server",
+  "defaultConfiguration": "development",
+  "configurations": {
+    "production": {
+      "buildTarget": "mapas-educativos:build:production"
+    },
+    "development": {
+      "buildTarget": "mapas-educativos:build:development"
+    }
+  }
+},
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n"
         },
