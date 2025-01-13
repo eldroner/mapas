@@ -14,3 +14,11 @@
   overflow-y: auto; /* Habilita scroll si el contenido desborda */
   padding: 5px; /* Añade algo de espacio interno */
 }
+
+.contador-errores-container {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000; /* Para que esté sobre el mapa */
+}

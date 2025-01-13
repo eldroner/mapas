@@ -1,6 +1,7 @@
 import { Component, AfterViewInit, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { MapaEspanaComponent } from '../../../mapas-base/mapa-espana/mapa-espana.component';
 import { BotoneraProvinciasComponent } from '../botonera-provincias/botonera-provincias.component';
+import { ContadorErroresComponent } from '../../../shared/contador-errores/contador-errores.component';
 import * as L from 'leaflet';
 
 interface PathWithFeature extends L.Path {
