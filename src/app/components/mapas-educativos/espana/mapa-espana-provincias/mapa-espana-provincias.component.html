@@ -1,12 +1,16 @@
-
-
+<app-contador-errores
+  [errores]="errores"
+  (fallosMaximos)="manejarFallosMaximos()">
+</app-contador-errores>
 <div class="contenedor-principal">
+
   <!-- Botonera izquierda -->
   <div class="botonera-izquierda">
     <app-botonera-provincias
       #botoneraIzquierda
       [provincias]="provinciasIzquierda"
       [provinciaActiva]="provinciaActiva"
+      [modoJuego]="modoJuego"
       (respuestaSeleccionada)="manejarRespuesta($event)">
     </app-botonera-provincias>
   </div>
@@ -27,7 +31,9 @@
       #botoneraDerecha
       [provincias]="provinciasDerecha"
       [provinciaActiva]="provinciaActiva"
+      [modoJuego]="modoJuego"
       (respuestaSeleccionada)="manejarRespuesta($event)">
     </app-botonera-provincias>
   </div>
+
 </div>

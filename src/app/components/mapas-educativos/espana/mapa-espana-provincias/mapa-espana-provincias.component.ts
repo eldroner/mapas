@@ -3,6 +3,8 @@ import { MapaEspanaComponent } from '../../../mapas-base/mapa-espana/mapa-espana
 import { BotoneraProvinciasComponent } from '../botonera-provincias/botonera-provincias.component';
 import { ContadorErroresComponent } from '../../../shared/contador-errores/contador-errores.component';
 import * as L from 'leaflet';
+import { AlertService } from '../../../../shared/alert.service';
+
 
 interface PathWithFeature extends L.Path {
   feature?: GeoJSON.Feature & { properties: { [key: string]: any } };
@@ -13,62 +15,93 @@ interface PathWithFeature extends L.Path {
   templateUrl: './mapa-espana-provincias.component.html',
   styleUrls: ['./mapa-espana-provincias.component.css'],
   standalone: true,
-  imports: [MapaEspanaComponent, BotoneraProvinciasComponent]
+  imports: [MapaEspanaComponent, BotoneraProvinciasComponent, ContadorErroresComponent]
 })
 export class MapaEspanaProvinciasComponent implements AfterViewInit {
   @ViewChild(MapaEspanaComponent, { static: false }) mapaBase!: MapaEspanaComponent;
   @ViewChild('botoneraIzquierda', { static: false }) botoneraIzquierda!: BotoneraProvinciasComponent;
   @ViewChild('botoneraDerecha', { static: false }) botoneraDerecha!: BotoneraProvinciasComponent;
+  
 
   provincias: string[] = []; // Extraídas dinámicamente desde el GeoJSON
   provinciasIzquierda: string[] = [];
   provinciasDerecha: string[] = [];
   provinciasUsadas: Set<string> = new Set(); // Provincias ya seleccionadas
   provinciaActiva: string | null = null;
+  modoJuego: boolean = false; // True para activar el modo juego
+  provinciaActual: string | null = null; // Provincia que el usuario debe adivinar
+  puntaje: number = 0;
+  progreso: number = 0;
+  errores: number = 0; // Contador de errores
+  maxErrores: number = 3; // Máximo número de errores permitidos
+  totalProvincias: number = this.provincias.length; // Total de provincias
   private geoJsonLayer!: L.GeoJSON;
   private capaProvinciaActiva: PathWithFeature | null = null;
   private parpadeoInterval: any = null;
   private marcadorProvinciaPequena: L.CircleMarker | null = null; // Para Ceuta y Melilla
 
 
-  constructor(private cdr: ChangeDetectorRef) {}
+  constructor(private cdr: ChangeDetectorRef, private alertService: AlertService) {}
 
   ngAfterViewInit(): void {
+    console.log('Botonera izquierda inicializada:', this.botoneraIzquierda);
+    console.log('Botonera derecha inicializada:', this.botoneraDerecha);
+  
     const map = this.mapaBase.map;
-
-    // Inicializar límites del mapa
+  
     const bounds = L.latLngBounds(
       L.latLng(27.251278, -18.893679), // Suroeste de las Islas Canarias
       L.latLng(43.574867, 5.654801)   // Noreste de la península
     );
     map.setMaxBounds(bounds);
     map.fitBounds(bounds);
-
+  
     this.loadProvincesGeoJSON(map).then(() => {
-      this.dividirProvincias(); // Dividir provincias en dos listas
-      this.provinciaActiva = this.seleccionarProvinciaAleatoria(); // Iniciar con una provincia activa
-      this.cdr.detectChanges(); // Aseguramos que Angular detecte los cambios
+      this.dividirProvincias();
+      this.provinciaActiva = this.seleccionarProvinciaAleatoria();
+      this.cdr.detectChanges();
     });
+  }
+  
+  
+
+  manejarFallosMaximos(): void {
+    alert('¡Has alcanzado el límite de errores!');
+    this.reiniciarErrores();
+  } 
+
+  reiniciarErrores(): void {
+    this.errores = 0;
+  }
+
+  verificarSeleccion(provincia: string): void {
+    if (provincia !== this.provinciaActiva) {
+      this.errores++; // Incrementa los errores si la selección es incorrecta
+    }
   }
 
   manejarRespuesta(provincia: string): void {
     if (provincia === this.provinciaActiva) {
-      alert(`¡Correcto! Has seleccionado ${provincia}`);
-      this.detenerIluminacionProvincia(); // Detener el parpadeo de la provincia actual
+      this.alertService.mostrarExito('¡Muy bien, has acertado!');
   
-      // Notificar a ambas botoneras
-      this.botoneraIzquierda.marcarComoCorrecta(provincia); // Botonera izquierda
-      this.botoneraDerecha.marcarComoCorrecta(provincia); // Botonera derecha
+      // Marcar como correcta en ambas botoneras
+      this.botoneraIzquierda.marcarComoCorrecta(provincia);
+      this.botoneraDerecha.marcarComoCorrecta(provincia);
   
-      // Añadir la provincia a las usadas
+      this.detenerIluminacionProvincia();
       this.provinciasUsadas.add(provincia);
-  
-      // Seleccionar una nueva provincia activa
       this.provinciaActiva = this.seleccionarProvinciaAleatoria();
     } else {
-      alert(`Incorrecto. La provincia activa era ${this.provinciaActiva}`);
+      this.alertService.mostrarError(`Has fallado. La provincia correcta era ${this.provinciaActiva}.`);
+      this.errores++;
+      if (this.errores >= this.maxErrores) {
+        this.mostrarDialogoFinJuego(true);
+      }
     }
   }
+  
+  
+  
 
   private dividirProvincias(): void {
     const mitad = Math.ceil(this.provincias.length / 2);
@@ -208,14 +241,26 @@ export class MapaEspanaProvinciasComponent implements AfterViewInit {
     }, 500); // Cambia cada 500ms
   }
 
-  private mostrarDialogoFinJuego(): void {
-    const resultado = confirm('¡Has ganado! El juego se reiniciará. ¿Estás listo?');
-    if (resultado) {
-      setTimeout(() => {
-        window.location.reload(); // Recargar la página después de un breve delay
-      }, 1000); // Esperar 1 segundo
+    private mostrarDialogoFinJuego(porErrores: boolean = false): void {
+      const mensaje = porErrores 
+        ? '¡Has alcanzado el máximo de errores! El juego se reiniciará. ¿Quieres intentarlo de nuevo?' 
+        : '¡Has ganado! El juego se reiniciará. ¿Estás listo?';
+    
+      const resultado = confirm(mensaje);
+      if (resultado) {
+        this.reiniciarJuego();
+      }
     }
-  }
+    
+    private reiniciarJuego(): void {
+      this.modoJuego = false;
+      this.errores = 0;
+      this.provinciasUsadas.clear();
+      this.puntaje = 0;
+      this.progreso = 0;
+      this.provinciaActiva = this.seleccionarProvinciaAleatoria();
+    }
+  
   
 
   private onEachFeature(feature: any, layer: L.Layer): void {

@@ -16,8 +16,16 @@ export class ContadorErroresComponent {
     this.errores++;
   }
 
-  reiniciarErrores(): void {
-    this.errores = 0;
+  getEstadoErrores(): string {
+    if (this.errores === 0) {
+      return '¡Vas muy bien!';
+    } else if (this.errores === 1) {
+      return '¡Ten cuidado...!';
+    } else if (this.errores === 2) {
+      return '¡Mucho cuidado!';
+    } else {
+      return 'Has perdido. Se acabó el juego.';
+    }
   }
 
   ngOnChanges(): void {

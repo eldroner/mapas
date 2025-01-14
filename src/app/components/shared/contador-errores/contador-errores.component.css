@@ -1,14 +1,23 @@
+.btn-orange {
+  background-color: #fd7e14; /* Naranja */
+  color: white;
+}
+
+.contador-errores {
+  font-size: 2rem;
+  font-weight: bold;
+  color: red;
+}
+
 .contador {
-    font-size: 30px;
-    color: white;
-    text-align: center;
-    padding: 20px;
-    border-radius: 10px;
-    width: 80px;
-    height: 80px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: auto;
-  }
-  
+  text-align: center;
+  padding: 40px 60px;
+  border-radius: 10px;
+  border: 2px solid #000;
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 10px auto;
+}
