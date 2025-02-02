@@ -1,15 +1,58 @@
-<h2>Registro de Usuario</h2>
-<form (ngSubmit)="onSubmit()">
-  <label>Nombre de usuario:</label>
-  <input type="text" [(ngModel)]="user.username" name="username" required>
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <div class="card shadow-lg">
+        <div class="card-header bg-primary text-white text-center">
+          <h3><i class="bi bi-person-plus-fill"></i> Registro de Usuario</h3>
+        </div>
+        <div class="card-body">
+          <form (ngSubmit)="onSubmit()">
+            <div class="mb-3">
+              <label for="username" class="form-label">Nombre de usuario</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-person"></i></span>
+                <input type="text" id="username" class="form-control" [(ngModel)]="user.username" name="username" required>
+              </div>
+            </div>
 
-  <label>Email:</label>
-  <input type="email" [(ngModel)]="user.email" name="email" required>
+            <div class="mb-3">
+              <label for="email" class="form-label">Email</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                <input type="email" id="email" class="form-control" [(ngModel)]="user.email" name="email" required>
+              </div>
+            </div>
 
-  <label>Contraseña:</label>
-  <input type="password" [(ngModel)]="user.password" name="password" required>
+            <div class="mb-3">
+              <label for="password" class="form-label">Contraseña</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                <input type="password" id="password" class="form-control" [(ngModel)]="user.password" name="password" required (input)="validarPassword()"
+       [ngClass]="{'is-invalid': passwordInvalida, 'is-valid': passwordValida}">
+              </div>
+            </div>
 
-  <button type="submit">Registrarse</button>
-</form>
+            <button type="submit" class="btn btn-primary w-100" [disabled]="loading">
+              <span *ngIf="loading" class="spinner-border spinner-border-sm"></span>
+              Registrarse
+            </button>
+          </form>
 
-<p *ngIf="message">{{ message }}</p>
+          <p *ngIf="message" class="alert mt-3" [ngClass]="{'alert-success': success, 'alert-danger': !success}">
+            {{ message }}
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="text-center mt-3 d-flex justify-content-center">
+  <a class="btn btn-outline-danger btn-lg me-2" href="#">
+    <i class="bi bi-google"></i> Google
+  </a>
+
+  <a class="btn btn-outline-primary btn-lg" href="#">
+    <i class="bi bi-facebook"></i> Facebook
+  </a>
+</div>
