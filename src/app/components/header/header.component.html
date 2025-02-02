@@ -1,22 +1,22 @@
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
-    <div class="container-fluid">
-      <a class="navbar-brand" href="#">Mapas interesantes e interactivos</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarSupportedContent">
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="#">Mapas interesantes e interactivos</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li><a class="text-dark" [routerLink]="'/'">Home</a></li>
+        <li><a class="text-dark" [routerLink]="'/antipodas'">Mapa Antípodas</a></li>
+        <li><a class="text-dark" [routerLink]="'/meridiano'">Meridiano Móvil</a></li>
+        <li><a class="text-dark" [routerLink]="'/espana-provincias'">Provincias de España</a></li>
+      </ul>
 
-          <li><a class="text-dark" [routerLink]="'/'">Home</a></li>
-          <li><a class="text-dark" [routerLink]="'/antipodas'">Mapa Antípodas</a></li>
-          <li><a class="text-dark" [routerLink]="'/meridiano'">Meridiano Móvil</a></li>
-          <li><a class="text-dark" [routerLink]="'/espana-provincias'">Provincias de España</a></li>
-          
-        </ul>
-        <form class="d-flex">
-          <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
-          <button class="btn btn-outline-success" type="submit">Search</button>
-        </form>
+      <div class="d-flex align-items-center">
+        <a class="btn btn-outline-primary me-2" [routerLink]="'/register'">
+          <i class="bi bi-person-plus"></i> Registrarse
+        </a>
       </div>
     </div>
-  </nav>
+  </div>
+</nav>

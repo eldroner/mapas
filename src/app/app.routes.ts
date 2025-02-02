@@ -6,11 +6,13 @@ import { MeridianoMovilComponent } from './components/mapas-educativos/meridiano
 import { AntipodasComponent } from './components/mapas-educativos/antipodas/antipodas.component';
 import { HomeComponent } from './components/home/home.component';
 import { MapaEspanaProvinciasComponent } from './components/mapas-educativos/espana/mapa-espana-provincias/mapa-espana-provincias.component';
+import { RegisterComponent } from './components/register/register.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
   { path: 'antipodas', component: AntipodasComponent },
   { path: 'meridiano', component: MeridianoMovilComponent },
   { path: 'espana-provincias', component: MapaEspanaProvinciasComponent },
+  { path: 'register', component: RegisterComponent }
 ];
 
